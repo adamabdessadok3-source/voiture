@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vocabulaire de la voiture</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1d1d1f;--mut:#6b6b70;--ac:#2b3a9e;--ok:#1d8a4b;--ko:#c8372d;--bd:#dcdad3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14151a;--card:#1e2027;--tx:#eeeef0;--mut:#9a9aa3;--ac:#8c9bff;--ok:#4cc27f;--ko:#ff6b60;--bd:#33353f}}
+:root[data-theme="dark"]{--bg:#14151a;--card:#1e2027;--tx:#eeeef0;--mut:#9a9aa3;--ac:#8c9bff;--ok:#4cc27f;--ko:#ff6b60;--bd:#33353f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:560px;padding:20px 16px 40px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 14px;border-radius:10px}
+button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.main{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+label.t{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);display:block;margin-bottom:6px}
+.q{font-size:28px;font-weight:700;text-align:center;margin:18px 0 6px;color:var(--ac)}
+.cat{text-align:center;color:var(--mut);font-size:13px;margin-bottom:14px}
+input[type=text]{width:100%;font:inherit;font-size:18px;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.fb{min-height:48px;margin:12px 0;text-align:center;font-size:16px}
+.ok{color:var(--ok)}.ko{color:var(--ko)}
+.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .2s}
+.stats{display:flex;justify-content:space-between;font-size:14px;color:var(--mut);margin-bottom:8px}
+.big{font-size:44px;font-weight:700;text-align:center;margin:10px 0}
+.list{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:left}
+th{color:var(--mut);font-size:12px;text-transform:uppercase}
+.hide{display:none}
+</style></head><body><main>
+<h1>🚗 Vocabulaire de la voiture</h1>
+<div class="sub">Anglais ⇄ français · Car interior &amp; Anatomy of an automobile</div>
+
+<div id="setup" class="card">
+<label class="t">Sens</label>
+<div class="row" id="dir">
+<button data-v="en" class="on">EN → FR</button><button data-v="fr">FR → EN</button><button data-v="mix">Mélangé</button></div>
+<label class="t">Thème</label>
+<div class="row" id="cat">
+<button data-v="all" class="on">Tout</button><button data-v="int">Intérieur</button><button data-v="ext">Extérieur</button></div>
+<div class="row"><button class="main" id="start">Commencer</button><button id="showlist">📖 Voir la liste</button></div>
+</div>
+
+<div id="quiz" class="card hide">
+<div class="stats"><span id="prog"></span><span id="score"></span></div>
+<div class="bar"><i id="barfill"></i></div>
+<div class="cat" id="qcat"></div>
+<div class="q" id="q"></div>
+<input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ta réponse…">
+<div class="fb" id="fb"></div>
+<div class="row" style="justify-content:center">
+<button class="main" id="check">Valider</button><button id="skip">Je ne sais pas</button><button id="quit">Arrêter</button></div>
+</div>
+
+<div id="end" class="card hide">
+<div class="big" id="final"></div>
+<div id="missed" style="text-align:center;color:var(--mut);margin-bottom:12px"></div>
+<div class="row" style="justify-content:center"><button class="main" id="retry">Refaire les erreurs</button><button id="again">Nouvelle partie</button></div>
+</div>
+
+<div id="listbox" class="card hide list">
+<table id="tbl"></table>
+<div class="row" style="margin-top:12px"><button id="closelist">Fermer</button></div>
+</div>
+
+<script>
+const D=[
+["i","rearview mirror","rétroviseur intérieur|rétroviseur"],
+["i","side-view mirror","rétroviseur extérieur|rétroviseur latéral|rétroviseur"],
+["i","visor","pare-soleil|paresoleil|visière"],
+["i","windshield wiper","essuie-glace"],
+["i","door handle","poignée de porte|poignée"],
+["i","vent","aération|bouche d’aération|grille d’aération"],
+["i","glove compartment|glove box","boîte à gants"],
+["i","GPS","GPS"],
+["i","dashboard","tableau de bord|panneau de bord"],
+["i","odometer","compteur kilométrique|compteur"],
+["i","speedometer","indicateur de vitesse|compteur de vitesse"],
+["i","fuel gauge","jauge de carburant|jauge d’essence|jauge à essence"],
+["i","steering wheel","volant"],
+["i","ignition","contact|démarreur"],
+["i","horn","klaxon|avertisseur"],
+["i","gear shift","levier de vitesse|levier de vitesses"],
+["i","gas pedal|accelerator|gas pedal or accelerator","accélérateur|pédale d’accélérateur|pédale d’accélération"],
+["i","brake pedal","pédale de frein|frein"],
+["i","emergency brake|parking brake","frein à main|frein de stationnement|frein de secours"],
+["i","headrest","appui-tête|appuie-tête|repose-tête"],
+["i","driver’s seat","siège conducteur|siège du conducteur"],
+["i","front passenger seat","siège passager avant|siège passager|siège du passager"],
+["i","seatbelt|safety belt","ceinture de sécurité|ceinture"],
+["e","window frame","cadre de fenêtre|encadrement de fenêtre|cadre de vitre"],
+["e","front seat","siège avant"],
+["e","windshield","pare-brise|parebrise"],
+["e","windshield washer","lave-glace|liquide lave-glace"],
+["e","air filter","filtre à air"],
+["e","battery","batterie"],
+["e","distributor","distributeur|delco"],
+["e","radiator","radiateur"],
+["e","alternator","alternateur"],
+["e","license plate","plaque d’immatriculation|plaque minéralogique|plaque"],
+["e","bumper","pare-chocs|parechoc|parechocs"],
+["e","headlight","phare|phares"],
+["e","turn signal|blinker","clignotant|clignotants"],
+["e","oil filter","filtre à huile"],
+["e","trunk","coffre"],
+["e","tail light","feu arrière|feux arrière"],
+["e","spare wheel","roue de secours"],
+["e","wheel","roue"],
+["e","hubcap","enjoliveur"],
+["e","tire","pneu"],
+["e","back seat","siège arrière|banquette arrière|banquette"]
+].map(([c,en,fr])=>{const f=fr.split("|"),e=en.split("|");return{c,en:e,fr:f,enShow:e.join(" / "),frShow:f[0]}});
+
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’']/g," ").replace(/[^a-z0-9 ]/g," ")
+ .split(" ").filter(w=>w&&!["le","la","les","l","un","une","the","a","an","du","de","des","d"].includes(w)).join(" ");
+const $=id=>document.getElementById(id);
+let dir="en",cat="all",deck=[],i=0,ok=0,missed=[],answered=false,cur=null;
+
+function pick(group,id){group.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===id))}
+$("dir").onclick=e=>{if(e.target.dataset.v){dir=e.target.dataset.v;pick($("dir"),dir)}};
+$("cat").onclick=e=>{if(e.target.dataset.v){cat=e.target.dataset.v;pick($("cat"),cat)}};
+
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+function begin(items){deck=shuffle(items).map(x=>({...x,d:dir==="mix"?(Math.random()<.5?"en":"fr"):dir}));i=0;ok=0;missed=[];
+ $("setup").classList.add("hide");$("end").classList.add("hide");$("listbox").classList.add("hide");$("quiz").classList.remove("hide");show()}
+$("start").onclick=()=>begin(D.filter(x=>cat==="all"||x.c===(cat==="int"?"i":"e")));
+
+function show(){
+ cur=deck[i];answered=false;
+ $("prog").textContent=(i+1)+" / "+deck.length;$("score").textContent="✔ "+ok;
+ $("barfill").style.width=(i/deck.length*100)+"%";
+ $("qcat").textContent=(cur.d==="en"?"Anglais → Français":"Français → Anglais")+" · "+(cur.c==="i"?"Intérieur":"Extérieur");
+ $("q").textContent=cur.d==="en"?cur.enShow:cur.frShow;
+ $("ans").value="";$("ans").disabled=false;$("fb").textContent="";$("fb").className="fb";
+ $("check").textContent="Valider";$("skip").classList.remove("hide");$("ans").focus();
+}
+function solution(){return cur.d==="en"?cur.frShow:cur.enShow}
+function judge(){
+ if(answered){next();return}
+ const v=norm($("ans").value);if(!v)return;
+ const accepted=(cur.d==="en"?cur.fr:cur.en).map(norm);
+ const good=accepted.includes(v);
+ answered=true;$("ans").disabled=true;$("skip").classList.add("hide");
+ if(good){ok++;$("fb").className="fb ok";$("fb").textContent="✅ Bravo !"+((cur.d==="en"?cur.fr:cur.en).length>1?" (aussi : "+(cur.d==="en"?cur.fr:cur.en).join(", ")+")":"")}
+ else{missed.push(cur);$("fb").className="fb ko";$("fb").textContent="❌ Réponse : "+solution()}
+ $("score").textContent="✔ "+ok;$("check").textContent=i+1<deck.length?"Suivant":"Résultat";
+}
+function next(){i++;if(i<deck.length)show();else finish()}
+$("check").onclick=judge;
+$("skip").onclick=()=>{if(answered)return;answered=true;missed.push(cur);$("ans").disabled=true;$("skip").classList.add("hide");
+ $("fb").className="fb ko";$("fb").textContent="Réponse : "+solution();$("check").textContent=i+1<deck.length?"Suivant":"Résultat"};
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!$("quiz").classList.contains("hide")){e.preventDefault();judge()}});
+$("quit").onclick=()=>{$("quiz").classList.add("hide");$("setup").classList.remove("hide")};
+
+function finish(){
+ $("quiz").classList.add("hide");$("end").classList.remove("hide");
+ $("final").textContent=ok+" / "+deck.length;
+ $("missed").textContent=missed.length?"À revoir : "+missed.map(m=>m.enShow).join(", "):"Sans faute, bien joué ! 🎉";
+ $("retry").classList.toggle("hide",!missed.length);
+}
+$("retry").onclick=()=>begin(missed);
+$("again").onclick=()=>{$("end").classList.add("hide");$("setup").classList.remove("hide")};
+
+$("showlist").onclick=()=>{
+ $("tbl").innerHTML="<tr><th>English</th><th>Français</th></tr>"+D.map(x=>"<tr><td>"+x.enShow+"</td><td>"+x.frShow+"</td></tr>").join("");
+ $("setup").classList.add("hide");$("listbox").classList.remove("hide")};
+$("closelist").onclick=()=>{$("listbox").classList.add("hide");$("setup").classList.remove("hide")};
+</script></main></body></html>
